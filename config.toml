@@ -1,0 +1,34 @@
+[path]
+# Pathname of the input seed list file to be used for evaluation.
+seed_file = "tools/seeds.txt"
+
+# Pathname of the directory of input files.
+input_dir = "tools/in"
+
+# Pathname of the directory of the output destination.
+output_dir = "evaluation/out"
+
+# # Pathname of the visualization results output by the tester.
+# vis_file = "vis.html"
+
+# # Pathname of the directory to output the visualization results.
+# vis_dir = "evaluation/vis"
+
+[thread]
+# Number of concurrent executions.
+thread_num = 8
+
+[command.build]
+# Command line arguments to build tester.
+tester = ["cargo", "build", "--release", "-p", "tools", "--bin", "tester"]
+
+# Command line arguments to build the program to be submitted.
+# submission = ["cargo", "build", "--release", "-p", "submission"]
+submission = ["cargo", "build", "--release", "-p", "submission"]
+
+[command.run]
+# Command line arguments to run tester.
+tester = ["target/release/tester"]
+
+# Command line arguments to run the program to be submitted.
+submission = ["target/release/submission"]
