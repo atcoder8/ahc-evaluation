@@ -9,6 +9,7 @@ use clap::Parser;
 use indicatif::{ProgressBar, ProgressStyle};
 use itertools::Itertools;
 use rayon::{prelude::IntoParallelRefIterator, prelude::*, ThreadPoolBuilder};
+use regex::Regex;
 
 fn main() {
     // Parse command line arguments.
@@ -210,10 +211,12 @@ Seed {} run terminated with exit status {}.
 
     let stderr = String::from_utf8(output.stderr).unwrap();
 
-    let score = stderr
-        .split_whitespace()
-        .last()
-        .and_then(|score| score.parse::<usize>().ok())
+    let score_regex = Regex::new(r"\bScore *= *(?<score>[0-9]*)\b").unwrap_or_else(|_| {
+        panic!("Failed to compile regular expression");
+    });
+    let score = score_regex
+        .captures(&stderr)
+        .and_then(|caps| caps["score"].parse::<usize>().ok())
         .unwrap_or_else(|| {
             panic!(
                 "
