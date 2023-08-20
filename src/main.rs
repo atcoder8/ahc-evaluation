@@ -36,11 +36,15 @@ fn main() {
         );
     });
     let seeds = seeds
-        .split_whitespace()
+        .lines()
         .map(|seed| {
-            seed.parse::<usize>().unwrap_or_else(|_| {
-                panic!("Failed to parse \"{}\" as a seed.", seed);
-            })
+            seed.split_whitespace()
+                .next()
+                .unwrap()
+                .parse::<usize>()
+                .unwrap_or_else(|_| {
+                    panic!("Failed to parse \"{}\" as a seed.", seed);
+                })
         })
         .collect_vec();
 
