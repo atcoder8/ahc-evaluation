@@ -128,9 +128,19 @@ fn build_tester(config: &Config) {
         .spawn()
         .expect("Failed to execute process for build tester.");
 
-    process_handle
+    let output = process_handle
         .wait_with_output()
         .expect("Failed to build tester.");
+
+    if !output.status.success() {
+        panic!(
+            "\
+Tester program build terminated with a non-zero status code.
+Status: {}\
+",
+            output.status
+        );
+    }
 }
 
 fn build_submission(config: &Config) {
@@ -139,9 +149,19 @@ fn build_submission(config: &Config) {
         .spawn()
         .expect("Failed to execute process for build submission program.");
 
-    process_handle
+    let output = process_handle
         .wait_with_output()
         .expect("Failed to build submission program.");
+
+    if !output.status.success() {
+        panic!(
+            "\
+Submission program build terminated with a non-zero status code.
+Status: {}\
+",
+            output.status
+        );
+    }
 }
 
 fn run_tester(config: &Config, seed: usize) -> Evaluation {
