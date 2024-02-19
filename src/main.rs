@@ -319,7 +319,8 @@ fn show_execution_time_statistics(seeds: &Vec<usize>, exe_times: &Vec<f64>) {
 Total: {:.3}
 Average: {:.3}
 Min: {:.3} (seed = {})
-Max: {:.3} (seed = {})",
+Max: {:.3} (seed = {})
+",
         total_exe_time,
         avg_exe_time,
         min_exe_time,
