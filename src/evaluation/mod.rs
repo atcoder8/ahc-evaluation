@@ -19,7 +19,7 @@ use crate::{
 
 pub use crate::evaluation::record::{show_statistics, write_to_csv};
 
-/// Executes the submission code and the tester for each seed and collect the score and the execution time.
+/// Executes the submission code and the local tester for each seed and collect the score and the execution time.
 pub fn evaluate(config: &Config, seeds: &[usize]) -> anyhow::Result<Vec<EvaluationRecord>> {
     // Style of progress bar.
     let progress_style = ProgressStyle::template(
@@ -28,16 +28,16 @@ pub fn evaluate(config: &Config, seeds: &[usize]) -> anyhow::Result<Vec<Evaluati
     )
     .with_context(|| "Failed to create progress bar style.")?;
 
-    // Progress bar during running tester.
+    // Progress bar during running of the local tester.
     let progress_bar = ProgressBar::new(seeds.len() as u64);
     progress_bar.set_style(progress_style);
-    progress_bar.set_prefix("[tester] Running...");
+    progress_bar.set_prefix("Running...");
 
     // Creates output directory.
     create_dir_all(&config.path.output_dir)
         .with_context(|| "Failed to create output directory.")?;
 
-    // Executes the tester and retrieve evaluations.
+    // Executes the local tester and retrieve evaluations.
     seeds
         .par_iter()
         .progress_with(progress_bar)
@@ -51,14 +51,14 @@ pub fn evaluate(config: &Config, seeds: &[usize]) -> anyhow::Result<Vec<Evaluati
         .collect::<Result<Vec<EvaluationRecord>, _>>()
 }
 
-/// Executes the submission code via the tester.
+/// Executes the submission code via the local tester.
 fn execute_integrated_process(config: &Config, seed: usize) -> anyhow::Result<EvaluationRecord> {
     // Reads the input file.
     let input_file_path = config.input_file_path(seed);
     let input_text = read_to_string(&input_file_path)
         .with_context(|| format!("Failed to read text from `{:?}`.", input_file_path))?;
 
-    // Executes the tester as a child process.
+    // Executes the local tester as a child process.
     let cmd_args = config.cmd_args_for_execute_tester(seed);
     let process_handle = spawn_process(&cmd_args)?;
 
@@ -95,11 +95,13 @@ fn execute_integrated_process(config: &Config, seed: usize) -> anyhow::Result<Ev
         .write_all(&output.stdout)
         .with_context(|| format!("Failed to write to output file {:?}.", output_file_path))?;
 
+    // Regular expression for retrieving a score.
     let score_regex = Regex::new(r"\bScore *= *(?<score>[0-9]*)\b")
         .with_context(|| "Failed to compile regular expression.")?;
 
     let stderr = String::from_utf8(output.stderr.clone())?;
 
+    // Retrieve the score from the output of the local tester.
     let Some(score) = score_regex
         .captures(&stderr)
         .and_then(|caps| caps["score"].parse::<i64>().ok())
@@ -125,7 +127,7 @@ Seed: {}
     })
 }
 
-/// Executes the submission code and the tester separately.
+/// Executes the submission code and the local tester separately.
 fn execute_independent_processes(config: &Config, seed: usize) -> anyhow::Result<EvaluationRecord> {
     // Reads the input file.
     let input_file_path = config.input_file_path(seed);
@@ -180,7 +182,7 @@ List of arguments: {:?}
         .write_all(&submission_process_output.stdout)
         .with_context(|| format!("Failed to write to output file {:?}.", output_file_path))?;
 
-    // Executes the tester as a child process.
+    // Executes the local tester as a child process.
     let cmd_args_for_execute_tester = config.cmd_args_for_execute_tester(seed);
 
     // Waits for process to terminate.
@@ -189,7 +191,7 @@ List of arguments: {:?}
         .with_context(|| {
             format!(
                 "
-Failed to execute the tester.
+Failed to execute the local tester.
 List of arguments: {:?}
 ",
                 cmd_args_for_execute_tester
@@ -205,18 +207,21 @@ List of arguments: {:?}
         }
     );
 
+    // Regular expression for retrieving a score.
     let score_regex = Regex::new(r"\bScore *= *(?<score>[0-9]*)\b")
         .with_context(|| "Failed to compile regular expression.")?;
 
+    // Closure for getting scores from strings.
     let retrieve_score = |text: &str| {
         score_regex
             .captures(text)
             .and_then(|caps| caps["score"].parse::<i64>().ok())
     };
 
-    let stdout = String::from_utf8(tester_process_output.stdout.clone()).unwrap();
-    let stderr = String::from_utf8(tester_process_output.stderr.clone()).unwrap();
+    let stdout = String::from_utf8(tester_process_output.stdout.clone())?;
+    let stderr = String::from_utf8(tester_process_output.stderr.clone())?;
 
+    // Retrieve the score from the output of the local tester.
     let Some(score) = retrieve_score(&stdout).or(retrieve_score(&stderr)) else {
         bail!(format!(
             "

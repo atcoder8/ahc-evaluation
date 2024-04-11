@@ -26,13 +26,13 @@ fn main() -> anyhow::Result<()> {
     // Returns an error if the seed list is empty.
     ensure!(!seeds.is_empty(), "Seed list is empty.");
 
-    // Builds the tester.
+    // Builds the local tester.
     build::build_tester(&config)?;
 
     // Builds the submission code.
     build::build_submission(&config)?;
 
-    // Executes the tester and retrieve evaluations.
+    // Executes the local tester and retrieve evaluations.
     let evaluation_table = evaluation::evaluate(&config, &seeds)?;
 
     // Shows statistics about scores and execution times.

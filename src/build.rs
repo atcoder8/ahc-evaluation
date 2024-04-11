@@ -41,11 +41,11 @@ List of arguments: {:?}
     Ok(())
 }
 
-/// Builds the tester.
+/// Builds the local tester.
 pub fn build_tester(config: &Config) -> anyhow::Result<()> {
     let cmd_args = &config.command.build.tester;
 
-    // Skips build if build command for tester is empty.
+    // Skips build if build command for local tester is empty.
     let Some(program) = cmd_args.first() else {
         return Ok(());
     };
@@ -56,7 +56,7 @@ pub fn build_tester(config: &Config) -> anyhow::Result<()> {
         .with_context(|| {
             format!(
                 "
-Failed to start the child process that builds the tester.
+Failed to start the child process that builds the local tester.
 List of arguments: {:?}
 ",
                 cmd_args
@@ -65,7 +65,7 @@ List of arguments: {:?}
 
     let output = process_handle
         .wait_with_output()
-        .with_context(|| "Failed to build the tester.")?;
+        .with_context(|| "Failed to build the local tester.")?;
 
     ensure!(
         output.status.success(),

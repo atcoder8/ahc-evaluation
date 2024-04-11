@@ -9,14 +9,14 @@ use serde::Deserialize;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct ThreadConfig {
-    /// Number of concurrent executions.
-    /// If not set, default number of threads is set.
+    /// Number of threads used for evaluation.
+    /// If not specified, it is determined automatically.
     pub thread_num: Option<usize>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct PathConfig {
-    /// Path of the input seed list file to be used for evaluation.
+    /// Path of the seed list file.
     pub seed_file: std::path::PathBuf,
 
     /// Path of the directory of input files.
@@ -31,10 +31,10 @@ pub struct PathConfig {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Build {
-    /// Command line arguments to build the submission code.
+    /// Build command for submission code.
     pub submission: Vec<String>,
 
-    /// Command line arguments to build the tester.
+    /// Build command for local tester.
     pub tester: Vec<String>,
 }
 
@@ -43,7 +43,7 @@ pub struct Execute {
     /// Command line arguments to execute the submission code.
     pub submission: Vec<String>,
 
-    /// Command line arguments to execute the tester.
+    /// Command line arguments to execute the local tester.
     ///
     /// The following placeholders can be used (Placeholders must be quoted independently).
     /// - `{input-path}`: The path of the input file corresponding to the seed.
@@ -51,7 +51,7 @@ pub struct Execute {
     /// - `{submission-execute}`: Execution command of the submission code.
     pub tester: Vec<String>,
 
-    /// Set this flag to `true` if the submission code is to be executed via the tester rather than independently.
+    /// Set this flag to `true` if the submission code is to be executed via the local tester rather than independently.
     pub integrated: bool,
 }
 
@@ -97,16 +97,16 @@ impl Config {
         self.path.output_dir.join(format!("{:04}.txt", seed))
     }
 
-    /// Returns the command to execute the tester with placeholders replaced.
+    /// Returns the command to execute the local tester with placeholders replaced.
     pub fn cmd_args_for_execute_tester(&self, seed: usize) -> Vec<String> {
         self.command
             .execute
             .tester
             .iter()
             .map(|arg| match arg.as_str() {
-                "{input-path}" => self.input_file_path(seed).to_str().unwrap().to_owned(),
-                "{output-path}" => self.output_file_path(seed).to_str().unwrap().to_owned(),
-                "{submission-execute}" => self.command.execute.submission.iter().join(" "),
+                "{input}" => self.input_file_path(seed).to_str().unwrap().to_owned(),
+                "{output}" => self.output_file_path(seed).to_str().unwrap().to_owned(),
+                "{cmd}" => self.command.execute.submission.iter().join(" "),
                 _ => arg.clone(),
             })
             .collect()

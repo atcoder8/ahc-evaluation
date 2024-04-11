@@ -3,10 +3,10 @@
 Evaluates the submission code for AHC (AtCoder Heuristic Contest).
 
 This program automates:
-  - Builds the submission code and the tester.
-  - Executes the submission code and the tester for each seed, and collects scores and execution times.
+  - Builds the submission code and the local tester.
+  - Executes the submission code and the local tester for each seed, and collects scores and execution times.
     - Communication between program and input/output files.
-    - Retrieve scores from the output of the tester.
+    - Retrieve scores from the output of the local tester.
 
 ## Usage
 
@@ -23,18 +23,18 @@ Options:
 
 ## Configuration
 
-Place the configuration file `evaluation/config.toml` under the working directory. You can also specify the path to the configuration file with the option `--config`.
+Place the configuration file `evaluation/config.toml` under the current directory. You can also specify the path to the configuration file with the option `--config`.
 
 An example of a configuration file is as follows. Keys cannot be changed, but value must be changed as necessary.
 
 ```toml
 [thread]
-# Number of concurrent executions.
-# If not set, default number of threads is set.
+# Number of threads used for evaluation.
+# If not specified, it is automatically determined by Rayon.
 thread_num = 8
 
 [path]
-# Path of the input seed list file to be used for evaluation.
+# Path of the seed list file.
 seed_file = "tools/seeds.txt"
 
 # Path of the directory of input files.
@@ -43,28 +43,28 @@ input_dir = "tools/in"
 # Path of the directory of output files.
 output_dir = "evaluation/out"
 
-# Path of the file that outputs the score and execution time for each seed.
-evaluation_record = "evaluation/evaluation-table.csv"
+# Path of the file that outputs a list summarizing the score and execution time for each seed.
+evaluation_record = "evaluation/summary.csv"
 
 [command]
-# Command line arguments to build the submission code.
+# Build command for submission code.
 # Specify an empty array if build execution is not required.
 build.submission = ["cargo", "build", "--release"]
 
-# Command line arguments to build the tester.
+# Build command for local tester.
 # Specify an empty array if build execution is not required.
 build.tester = []
 
-# Command line arguments to execute the submission code.
+# Execution command for submission code.
 execute.submission = ["submission/target/release/submission"]
 
-# Command line arguments to execute the tester.
+# Execution command for local tester.
 # The following placeholders can be used (Placeholders must be quoted independently).
-# - `{input-path}`: The path of the input file corresponding to the seed.
-# - `{output-path}`: The path of the output file corresponding to the seed.
-# - `{submission-execute}`: Execution command of the submission code.
-execute.tester = ["tools/tester", "{input-path}", "{output-path}"]
+# - `{input}`: The path of the input file corresponding to the seed.
+# - `{output}`: The path of the output file corresponding to the seed.
+# - `{cmd}`: Execution command of the submission code.
+execute.tester = ["tools/tester", "{input}", "{output}"]
 
-# Set this flag to `true` if the submission code is to be executed via the tester rather than independently.
+# Set this flag to `true` if the submission code is to be executed via the local tester rather than independently.
 execute.integrated = false
 ```
