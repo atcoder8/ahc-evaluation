@@ -8,6 +8,14 @@ This program automates:
     - Communication between program and input/output files.
     - Retrieve scores from the output of the local tester.
 
+## Installation
+
+Install from [crates.io](https://crates.io/) using the following command.
+
+```sh
+cargo install ahc-evaluation
+```
+
 ## Usage
 
 ```

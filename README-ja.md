@@ -8,6 +8,14 @@ AHC (AtCoder Heuristic Contest) の提出コードを評価します。
     - プログラムとファイルの入出力を行います。
     - ローカルテスタの出力からスコアを取得します。
 
+## インストール
+
+以下のコマンドを使用して[crates.io](https://crates.io/)からインストールします.
+
+```sh
+cargo install ahc-evaluation
+```
+
 ## 使用方法
 
 ```
